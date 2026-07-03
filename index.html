@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="author" content="Midnight Games">
+<title>Car Chase | Midnight Games</title>
+<meta name="theme-color" content="#ff3e3e">
+<link href="https://cdn.jsdelivr.net/npm/vazirmatn@33.003/Vazirmatn-font-face.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0a0a0f;--panel:#12121e;--accent:#ff3e3e;--accent2:#ff8c00;
+  --accent3:#00d4ff;--gold:#ffd700;--green:#00ff88;
+  --text:#fff;--dim:#aaaacc;--border:#2a2a4a;--bglow:#4040aa;
+  --font:'Vazirmatn',Tahoma,sans-serif;
+}
+.theme-night{--bg:#02020a;--panel:#05050f;--border:#1a1a3a;}
+.theme-day{--bg:#e8f4ff;--panel:#ffffff;--accent:#e02020;--accent2:#e07000;--accent3:#0088bb;--gold:#cc9900;--green:#00aa55;--text:#111;--dim:#557799;--border:#c0d8ee;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text);user-select:none;-webkit-user-select:none;}
+
+#loadingScreen{position:fixed;inset:0;z-index:99999;background:#0a0a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .4s ease;}
+#loadingScreen.fade-out{opacity:0;pointer-events:none;}
+#loadingScreen.gone{display:none;}
+.ld-logo{font-size:5rem;animation:ldB .7s ease-in-out infinite alternate;}
+@keyframes ldB{from{transform:scale(1) rotate(-4deg)}to{transform:scale(1.15) rotate(4deg)}}
+.ld-title{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#ff3e3e,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ld-sub{font-size:.75rem;letter-spacing:6px;color:#aaaacc;}
+.ld-badge{font-size:.7rem;letter-spacing:4px;color:#8800ff;background:rgba(136,0,255,.12);border:1px solid rgba(136,0,255,.3);border-radius:20px;padding:4px 14px;}
+.ld-bar-wrap{width:260px;height:6px;background:#1a1a3a;border-radius:3px;overflow:hidden;}
+.ld-bar{height:100%;width:0%;background:linear-gradient(90deg,#ff3e3e,#ff8c00,#ffd700);border-radius:3px;transition:width .3s ease;}
+.ld-txt{font-size:.82rem;color:#aaaacc;}
+
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);z-index:10;overflow-y:auto;}
+.screen.active{display:flex;}
+
+#menuScreen{background:radial-gradient(ellipse at center,#0d0d2b 0%,#050510 70%);}
+.theme-day #menuScreen{background:linear-gradient(160deg,#c8e8ff,#a0d0ff,#e8f8ff)!important;}
+.menu-car{font-size:5rem;animation:carRock 3s ease-in-out infinite;z-index:1;}
+@keyframes carRock{0%,100%{transform:translateX(-8px) rotate(-2deg)}50%{transform:translateX(8px) rotate(2deg)}}
+.menu-logo{font-size:clamp(2rem,8vw,3.4rem);font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#ff3e3e,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;z-index:1;}
+.menu-3d-badge{font-size:.68rem;letter-spacing:5px;color:#8800ff;background:rgba(136,0,255,.15);border:1px solid rgba(136,0,255,.35);border-radius:20px;padding:3px 14px;margin-bottom:4px;z-index:1;}
+.menu-sub{font-size:.75rem;color:var(--dim);letter-spacing:6px;margin-bottom:28px;z-index:1;}
+.menu-btns{display:flex;flex-direction:column;gap:9px;width:min(295px,82vw);z-index:1;}
+.menu-coins{position:absolute;bottom:12px;font-size:.74rem;color:var(--dim);z-index:1;}
+
+.btn{padding:12px 24px;border:2px solid var(--border);border-radius:12px;background:rgba(255,255,255,.05);color:var(--text);font-family:var(--font);font-size:.92rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;backdrop-filter:blur(6px);}
+.btn:hover{border-color:var(--accent);background:rgba(255,62,62,.08);transform:translateY(-2px);box-shadow:0 6px 22px rgba(255,62,62,.22);}
+.btn:active{transform:translateY(0);}
+.btn.primary{background:linear-gradient(135deg,#ff3e3e,#cc0000);border-color:#ff6666;color:#fff;}
+.btn.gold{background:linear-gradient(135deg,#ffd700,#ff8c00);border-color:#ffee44;color:#1a0a00;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;width:min(385px,90vw);max-height:88vh;overflow-y:auto;z-index:1;box-shadow:0 18px 55px rgba(0,0,80,.45);}
+.panel::-webkit-scrollbar{width:4px;}.panel::-webkit-scrollbar-thumb{background:var(--bglow);border-radius:2px;}
+.panel-title{font-size:1.4rem;font-weight:700;margin-bottom:18px;text-align:center;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.psec{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.psec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.psec label{display:block;font-size:.8rem;color:var(--dim);margin-bottom:6px;font-weight:600;}
+
+.trow{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+.tlabel{font-size:.9rem;}
+.toggle{width:48px;height:25px;background:#444;border-radius:13px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;}
+.toggle.on{background:var(--green);}
+.toggle::after{content:'';position:absolute;width:19px;height:19px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .3s;}
+.toggle.on::after{left:26px;}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--border);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;cursor:pointer;}
+
+.gsel{width:100%;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:.86rem;outline:none;}
+.gsel option{background:#1a1a2e;}
+
+.tabs{display:flex;gap:7px;margin-bottom:16px;}
+.tab{flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;color:var(--dim);font-family:var(--font);font-size:.8rem;cursor:pointer;transition:all .2s;}
+.tab.active{background:rgba(255,62,62,.16);border-color:var(--accent);color:var(--text);}
+
+.items-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sitem{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:13px 9px;text-align:center;cursor:pointer;transition:all .2s;}
+.sitem:hover{border-color:var(--accent2);background:rgba(255,140,0,.07);transform:translateY(-2px);}
+.si-icon{font-size:2rem;margin-bottom:5px;}
+.si-name{font-size:.8rem;font-weight:600;margin-bottom:2px;}
+.si-desc{font-size:.68rem;color:var(--dim);margin-bottom:5px;}
+.si-price{font-size:.8rem;color:var(--gold);font-weight:700;}
+.si-count{font-size:.65rem;color:var(--green);margin-top:2px;}
+.lvl-bars{display:flex;gap:3px;justify-content:center;margin:4px 0;}
+.lvl-bar{width:13px;height:4px;border-radius:2px;background:var(--border);}
+.lvl-bar.on{background:var(--gold);}
+
+.coins-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:50px;margin-bottom:16px;font-size:1rem;font-weight:700;color:var(--gold);}
+
+.skin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.skin-item{aspect-ratio:.8;border:2px solid var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;padding:6px 4px;}
+.skin-item:hover{border-color:var(--accent2);transform:scale(1.04);}
+.skin-item.selected{border-color:var(--gold);box-shadow:0 0 14px rgba(255,215,0,.35);}
+.skin-item.locked{opacity:.5;cursor:not-allowed;}
+.skin-item.locked::after{content:'🔒';position:absolute;top:3px;right:3px;font-size:.7rem;}
+.skin-name{font-size:.6rem;color:var(--dim);margin-top:3px;font-weight:600;text-align:center;}
+.skin-price{font-size:.58rem;color:var(--gold);}
+
+.lang-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.lbtn{padding:6px 13px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--dim);font-family:var(--font);font-size:.8rem;cursor:pointer;transition:all .2s;}
+.lbtn.active{background:rgba(0,212,255,.12);border-color:var(--accent3);color:var(--text);}
+
+.code-wrap{display:flex;gap:7px;margin-bottom:12px;}
+.code-inp{flex:1;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:.92rem;outline:none;text-align:center;letter-spacing:3px;}
+.code-inp:focus{border-color:var(--accent3);}
+.code-res{text-align:center;padding:10px;border-radius:10px;font-size:.85rem;min-height:40px;}
+.code-res.ok{background:rgba(0,255,136,.09);border:1px solid var(--green);color:var(--green);}
+.code-res.err{background:rgba(255,62,62,.09);border:1px solid var(--accent);color:var(--accent);}
+.ibox{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.16);border-radius:9px;padding:10px 13px;font-size:.78rem;color:var(--dim);line-height:1.75;margin-top:9px;}
+
+/* GAME */
+#gameScreen{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important;background:#000!important;display:none;}
+#gameScreen.active{display:block!important;}
+#threeCanvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;display:block;touch-action:none;}
+
+#hud{position:absolute;top:0;left:0;right:0;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.75),transparent);z-index:100;pointer-events:none;}
+.hud-item{display:flex;align-items:center;gap:4px;font-size:.82rem;font-weight:600;}
+.hud-gold{color:var(--gold);}
+.hud-blue{color:var(--accent3);}
+.hud-red{color:var(--accent);}
+.hud-pu{pointer-events:all;}
+
+#nitroBar{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:101;pointer-events:none;}
+#nitroWrap{width:min(200px,50vw);height:8px;background:rgba(0,0,0,.5);border-radius:4px;overflow:hidden;border:1px solid rgba(136,0,255,.4);}
+#nitroFill{height:100%;width:100%;background:linear-gradient(90deg,#4400aa,#8800ff,#cc44ff);border-radius:4px;transition:width .1s;}
+#nitroLabel{font-size:.68rem;color:#cc88ff;letter-spacing:2px;}
+
+#nitroBtnTouch{position:absolute;bottom:50px;right:16px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle,#8800ff,#4400aa);border:2px solid #bb44ff;z-index:102;display:flex;align-items:center;justify-content:center;font-size:1.7rem;cursor:pointer;box-shadow:0 0 14px #8800ff88;}
+#nitroBtnTouch:active{transform:scale(.92);}
+#nitroBtnTouch.empty{opacity:.35;pointer-events:none;}
+
+#puBtns{position:absolute;bottom:120px;left:10px;display:flex;flex-direction:column;gap:6px;z-index:102;}
+.pu-use-btn{width:46px;height:46px;border-radius:10px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;position:relative;}
+.pu-use-btn:active{transform:scale(.94);}
+.pu-badge{position:absolute;top:-4px;right:-4px;background:var(--accent);color:#fff;font-size:.55rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.pu-active-glow{box-shadow:0 0 12px var(--green);border-color:var(--green)!important;}
+
+#puHud{position:absolute;top:48px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none;z-index:101;}
+.pu-chip{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:3px 9px;font-size:.75rem;display:flex;align-items:center;gap:4px;}
+.pu-t{color:var(--green);}
+
+#pauseOv{position:absolute;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px);}
+#pauseOv.vis{display:flex;}
+.pause-t{font-size:2rem;margin-bottom:22px;text-align:center;color:var(--accent3);}
+
+#gameOverScreen{background:radial-gradient(ellipse at center,#200000 0%,#050505 70%);}
+.go-title{font-size:clamp(2rem,9vw,4rem);font-weight:900;color:var(--accent);text-shadow:0 0 30px rgba(255,62,62,.7);margin-bottom:16px;z-index:1;}
+.go-box{background:rgba(255,255,255,.04);border:1px solid var(--bglow);border-radius:14px;padding:20px 32px;text-align:center;margin-bottom:22px;z-index:1;}
+.go-lbl{color:var(--dim);font-size:.78rem;margin-bottom:4px;}
+.go-val{font-size:1.9rem;font-weight:700;color:var(--gold);}
+.go-stats{margin-top:10px;display:flex;gap:24px;justify-content:center;}
+.go-sv{font-size:1.1rem;color:var(--accent3);}
+
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(10,10,20,.95);border:1px solid var(--bglow);border-radius:11px;padding:9px 20px;font-size:.85rem;font-weight:600;z-index:99998;transition:transform .4s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(8px);white-space:nowrap;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.tg{color:var(--gold);border-color:var(--gold);}
+#toast.tok{color:var(--green);border-color:var(--green);}
+#toast.terr{color:var(--accent);border-color:var(--accent);}
+
+.cpop{position:fixed;font-size:1.1rem;font-weight:700;color:var(--gold);pointer-events:none;z-index:9990;animation:cpF 1s ease-out forwards;}
+@keyframes cpF{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-52px) scale(1.4);opacity:0}}
+
+.star-p{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:stTw 3s ease-in-out infinite;}
+@keyframes stTw{0%,100%{opacity:.2}50%{opacity:1}}
+
+.about-circ{width:58px;height:58px;border-radius:50%;overflow:hidden;border:2px solid var(--bglow);cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;background:var(--panel);}
+.about-circ:hover{border-color:var(--accent3);box-shadow:0 0 14px rgba(0,212,255,.38);transform:scale(1.08);}
+
+/* Mobile left/right buttons */
+#mobileControls{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);display:flex;gap:16px;z-index:102;direction:ltr;}
+.ctrl-btn{width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);font-size:1.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{background:rgba(255,255,255,.25);transform:scale(.93);}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--bglow);border-radius:2px;}
+
+/* ===== استایل‌های مایکت و نظرسنجی ===== */
+.myket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+.myket-btn {
+  padding: 10px 6px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: .78rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.myket-btn:hover {
+  border-color: var(--accent3);
+  background: rgba(0,212,255,.08);
+  transform: translateY(-2px);
+}
+.myket-btn.primary-m {
+  background: linear-gradient(135deg, #ff3e3e, #cc0000);
+  border-color: #ff6666;
+  color: #fff;
+}
+.myket-btn.gold-m {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border-color: #ffee44;
+  color: #1a0a00;
+}
+
+#ratingModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+#ratingModal.visible {
+  display: flex;
+}
+.rating-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 22px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.8);
+}
+.rating-box .icon {
+  font-size: 3.6rem;
+  margin-bottom: 8px;
+}
+.rating-box h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: var(--gold);
+}
+.rating-box p {
+  font-size: .9rem;
+  color: var(--dim);
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.rating-box .btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.rating-box .btns button {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.rating-box .btns button:hover {
+  transform: translateY(-2px);
+}
+.rating-box .btns .later-btn {
+  border-color: var(--dim);
+  color: var(--dim);
+}
+.rating-box .btns .rate-btn {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border-color: #ffee44;
+  color: #1a0a00;
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="ld-logo">🏎️</div>
+  <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">
+    <div class="ld-title">Car Chase</div>
+    <div class="ld-sub">MIDNIGHT GAMES</div>
+  </div>
+  <div class="ld-bar-wrap"><div class="ld-bar" id="ldBar"></div></div>
+  <div class="ld-txt" id="ldTxt">در حال بارگذاری...</div>
+</div>
+
+<!-- MAIN MENU -->
+<div class="screen" id="menuScreen">
+  <div class="menu-car">🏎️</div>
+  <div class="menu-logo">CAR CHASE</div>
+  <div class="menu-sub">MIDNIGHT GAMES</div>
+  <div class="menu-btns">
+    <button class="btn primary" id="btnPlay" onclick="startGame()">▶ شروع بازی</button>
+    <button class="btn" id="btnStore" onclick="showScreen('storeScreen')">🏪 فروشگاه</button>
+    <button class="btn" id="btnSkins" onclick="showScreen('skinsScreen')">🎨 ظاهر ماشین</button>
+    <button class="btn" id="btnSettings" onclick="showScreen('settingsScreen')">⚙️ تنظیمات</button>
+    <button class="btn" id="btnSecret" onclick="showScreen('secretScreen')">🔐 منوی مخفی</button>
+    <button class="btn" id="btnAbout" onclick="showScreen('aboutScreen')">ℹ️ درباره ما</button>
+  </div>
+  <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <div id="hud">
+    <div class="hud-item hud-blue">🏁 <span id="hudScore">0</span></div>
+    <div class="hud-item hud-gold">🪙 <span id="hudCoins">0</span></div>
+    <div class="hud-item hud-red" id="hudLives">❤️❤️❤️</div>
+    <button class="btn hud-pu" style="padding:5px 10px;font-size:.7rem" onclick="togglePause()">⏸</button>
+  </div>
+  <div id="puHud"></div>
+  <canvas id="threeCanvas"></canvas>
+  <div id="puBtns"></div>
+  <div id="nitroBar">
+    <div id="nitroLabel">⚡ NITRO</div>
+    <div id="nitroWrap"><div id="nitroFill"></div></div>
+  </div>
+  <div id="nitroBtnTouch" onclick="activateNitro()">⚡</div>
+  <div id="mobileControls">
+    <div class="ctrl-btn" id="btnLeft" ontouchstart="startLane(-1)" ontouchend="stopLane()">◀</div>
+    <div class="ctrl-btn" id="btnRight" ontouchstart="startLane(1)" ontouchend="stopLane()">▶</div>
+  </div>
+  <div id="pauseOv">
+    <div class="panel" style="width:min(270px,78vw);text-align:center">
+      <div class="pause-t" id="pauseTitle">⏸ مکث</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn primary" id="pauseResumeBtn" onclick="togglePause()">▶ ادامه</button>
+        <button class="btn" id="pauseRestartBtn" onclick="restartGame()">🔄 شروع مجدد</button>
+        <button class="btn" id="pauseMenuBtn" onclick="returnToMenu()">🏠 منوی اصلی</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="gameOverScreen">
+  <div class="go-title" id="goTitle">بازی تمام شد!</div>
+  <div class="go-box">
+    <div class="go-lbl" id="goScoreLbl">امتیاز نهایی</div>
+    <div class="go-val" id="goScore">0</div>
+    <div class="go-stats">
+      <div><div class="go-lbl" id="goDistLbl">مسافت</div><div class="go-sv" id="goDist">0</div></div>
+      <div><div class="go-lbl" id="goCoinLbl">سکه</div><div class="go-sv" id="goCoins">0</div></div>
+      <div><div class="go-lbl" id="goHiLbl">بهترین</div><div class="go-sv" id="goHi">0</div></div>
+    </div>
+  </div>
+  <div id="reviveSec" style="z-index:1;text-align:center;margin-bottom:12px">
+    <button class="btn gold" id="reviveBtn" onclick="revivePlayer()">💎 احیا</button>
+    <div style="font-size:.72rem;color:var(--gold);margin-top:3px" id="reviveCost"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:9px;width:min(250px,76vw);z-index:1">
+    <button class="btn primary" id="goRestartBtn" onclick="restartGame()">▶ بازی مجدد</button>
+    <button class="btn" id="goMenuBtn" onclick="returnToMenu()">🏠 منوی اصلی</button>
+  </div>
+</div>
+
+<!-- STORE -->
+<div class="screen" id="storeScreen">
+  <div class="panel">
+    <div class="panel-title" id="storeTitleEl">🏪 فروشگاه</div>
+    <div class="coins-row">🪙 <span id="storeCoins">0</span></div>
+    <div class="tabs">
+      <button class="tab active" id="tabPuBtn" onclick="switchTab('powerups',this)">💡 ابزارها</button>
+      <button class="tab" id="tabUpBtn" onclick="switchTab('upgrades',this)">🔧 ارتقاء</button>
+    </div>
+    <div id="storeContent" class="items-grid"></div>
+    <div style="margin-top:14px"><button class="btn" id="storeBackBtn" onclick="showScreen('menuScreen')">← برگشت</button></div>
+  </div>
+</div>
+
+<!-- SKINS -->
+<div class="screen" id="skinsScreen">
+  <div class="panel">
+    <div class="panel-title" id="skinsTitleEl">🎨 ظاهر ماشین</div>
+    <div class="coins-row">🪙 <span id="skinsCoins">0</span></div>
+    <div id="skinsGrid" class="skin-grid"></div>
+    <div style="margin-top:14px"><button class="btn" id="skinsBackBtn" onclick="showScreen('menuScreen')">← برگشت</button></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="settingsScreen">
+  <div class="panel">
+    <div class="panel-title" id="settTitleEl">⚙️ تنظیمات</div>
+    <div class="psec">
+      <label id="settThemeLbl">🎨 تم</label>
+      <div class="lang-btns">
+        <button class="lbtn active" id="thDark" onclick="setTheme('dark',this)">🌑 تاریک</button>
+        <button class="lbtn" id="thNight" onclick="setTheme('night',this)">🌌 شب</button>
+        <button class="lbtn" id="thDay" onclick="setTheme('day',this)">☀️ روز</button>
+      </div>
+    </div>
+    <div class="psec">
+      <label id="settLangLbl">🌍 زبان</label>
+      <div class="lang-btns">
+        <button class="lbtn active" id="lbtnFa" onclick="setLang('fa',this)">فارسی 🇮🇷</button>
+        <button class="lbtn" id="lbtnEn" onclick="setLang('en',this)">English 🇬🇧</button>
+        <button class="lbtn" id="lbtnAr" onclick="setLang('ar',this)">العربية 🇸🇦</button>
+      </div>
+    </div>
+    <div class="psec">
+      <div class="trow">
+        <span class="tlabel" id="settSoundLbl">🔊 صدا</span>
+        <div class="toggle on" id="toggleSound" onclick="toggleSett('sound',this)"></div>
+      </div>
+      <label id="settVolLbl">میزان صدا</label>
+      <input type="range" min="0" max="100" value="70" id="volSlider" oninput="updateVol(this.value)">
+    </div>
+    <div class="psec">
+      <div class="trow">
+        <span class="tlabel" id="settVibLbl">📳 لرزش</span>
+        <div class="toggle on" id="toggleVib" onclick="toggleSett('vibrate',this)"></div>
+      </div>
+    </div>
+    <div class="psec">
+      <label id="settDiffLbl">⚙️ سختی</label>
+      <select class="gsel" id="diffSel" onchange="sett.difficulty=this.value;saveSett()">
+        <option value="easy" id="dEasy">آسان</option>
+        <option value="normal" id="dNormal" selected>معمولی</option>
+        <option value="hard" id="dHard">سخت</option>
+        <option value="extreme" id="dExtreme">بسیار سخت</option>
+      </select>
+    </div>
+    <div class="psec">
+      <label id="settCamLbl">📷 دوربین</label>
+      <div class="lang-btns">
+        <button class="lbtn active" id="camClose" onclick="setCam('close',this)">نزدیک</button>
+        <button class="lbtn" id="camMid" onclick="setCam('mid',this)">میانه</button>
+        <button class="lbtn" id="camFar" onclick="setCam('far',this)">دور</button>
+      </div>
+    </div>
+    <button class="btn primary" id="settSaveBtn" onclick="showScreen('menuScreen')">ذخیره و برگشت</button>
+  </div>
+</div>
+
+<!-- SECRET -->
+<div class="screen" id="secretScreen">
+  <div class="panel">
+    <div class="panel-title" id="secretTitleEl">🔐 منوی مخفی</div>
+    <div style="text-align:center;font-size:2.6rem;margin-bottom:9px">🕵️</div>
+    <div style="color:var(--dim);font-size:.81rem;text-align:center;margin-bottom:16px" id="secretDescEl">کد مخفی را وارد کنید تا جوایز ویژه دریافت کنید</div>
+    <div class="code-wrap">
+      <input type="text" class="code-inp" id="codeInp" maxlength="12">
+      <button class="btn primary" style="width:70px;padding:10px" id="codeApplyBtn" onclick="applyCode()">اعمال</button>
+    </div>
+    <div class="code-res" id="codeRes"></div>
+    <div class="ibox" id="secretHintEl">💡 کد یکبار مصرف است. فقط یک کد وجود دارد!</div>
+    <div style="margin-top:16px"><button class="btn" id="secretBackBtn" onclick="showScreen('menuScreen')">← برگشت</button></div>
+  </div>
+</div>
+
+<!-- ===== ABOUT (نسخه نهایی با دکمه‌های مایکت + کانال بله) ===== -->
+<div class="screen" id="aboutScreen">
+  <div class="panel">
+    <div class="panel-title" id="aboutTitleEl">ℹ️ درباره ما</div>
+    <div style="text-align:center;margin-bottom:13px">
+      <div style="font-size:3rem">🏎️</div>
+      <div style="font-size:1.45rem;font-weight:700;color:var(--accent2);margin-bottom:2px">Car Chase</div>
+      <div style="font-size:.8rem;color:var(--dim)" id="aboutVerEl">نسخه ۱.۰ | توسعه‌دهنده: Midnight Games</div>
+    </div>
+    <div style="background:rgba(255,255,255,.03);border-radius:11px;padding:13px;margin-bottom:14px;font-size:.78rem;color:var(--dim);line-height:2" id="aboutFeatEl"></div>
+    
+    <!-- دکمه‌های مایکت + کانال بله -->
+    <div class="myket-grid">
+      <button class="myket-btn primary-m" onclick="openMyketIntent('comment')">📝 ثبت نظر</button>
+      <button class="myket-btn gold-m" onclick="openMyketIntent('update')">📲 بروزرسانی</button>
+      <button class="myket-btn" onclick="window.open('https://ble.ir/Midnight_Games','_blank')">📢 کانال بله‌ی ما</button>
+      <button class="myket-btn" onclick="openMyketIntent('details')">📱 مشاهده در مایکت</button>
+    </div>
+
+    <button class="btn" id="aboutBackBtn" onclick="showScreen('menuScreen')">← برگشت</button>
+  </div>
+</div>
+
+<!-- ===== پاپ‌آپ نظرسنجی ===== -->
+<div id="ratingModal">
+  <div class="rating-box">
+    <div class="icon">⭐</div>
+    <h3>نظر شما برای ما ارزشمند است!</h3>
+    <p>شما بیش از ۳۰ ساعت از بازی لذت بردید. لطفاً با ثبت نظر در مایکت به ما کمک کنید تا بهتر شویم.</p>
+    <div class="btns">
+      <button class="later-btn" onclick="closeRatingModal('later')">⏰ بعداً</button>
+      <button class="rate-btn" onclick="openMyketIntent('comment'); closeRatingModal('rated')">✍️ ثبت نظر</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   CAR CHASE 3D v2.0 — Three.js Edition | Midnight Games
+   (کد کامل با قابلیت‌های مایکت و نظرسنجی)
+   ============================================================ */
+
+// ── تنظیمات ─────────────────────────────────────────────────
+const sett={sound:true,vibrate:true,volume:.7,difficulty:'normal',theme:'dark',lang:'fa',camMode:'close'};
+function saveSett(){try{localStorage.setItem('cc3_sett',JSON.stringify(sett));}catch(e){}}
+function loadSett(){try{const s=JSON.parse(localStorage.getItem('cc3_sett')||'{}');Object.assign(sett,s);}catch(e){}}
+
+// ── حالت بازی ─────────────────────────────────────────────────
+const GS={
+  coins:500,highScore:0,score:0,lives:3,
+  distance:0,coinsEarned:0,running:false,paused:false,
+  speed:0,baseSpeed:0.12,frame:0,animId:null,
+  activePu:{},equippedSkin:0,codeUsed:false,revivesUsed:0,
+  nitro:100,nitroMax:100,nitroCooldown:0
+};
+
+// ── پاورآپ‌ها ──────────────────────────────────────────────────
+const PU_DEFS=[
+  {id:'shield',icon:'🛡️',price:80,owned:0,effect:'shield',dur:8000,name:{fa:'سپر',en:'Shield',ar:'درع'},desc:{fa:'یک تصادف را جذب می‌کند',en:'Absorbs one crash',ar:'يمتص تصادماً'}},
+  {id:'magnet',icon:'🧲',price:60,owned:0,effect:'magnet',dur:10000,name:{fa:'آهنربا',en:'Magnet',ar:'مغناطيس'},desc:{fa:'سکه‌ها را جذب می‌کند',en:'Attracts coins',ar:'يجذب العملات'}},
+  {id:'boost',icon:'🚀',price:100,owned:0,effect:'boost',dur:6000,name:{fa:'بوست',en:'Boost',ar:'تعزيز'},desc:{fa:'سرعت ۱.۷× و امتیاز ۲×',en:'Speed 1.7x & 2x score',ar:'سرعة ×١.٧'}},
+  {id:'freeze',icon:'❄️',price:120,owned:0,effect:'freeze',dur:5000,name:{fa:'یخ',en:'Freeze',ar:'تجميد'},desc:{fa:'ماشین‌های دیگر را کند می‌کند',en:'Slows other cars',ar:'يبطئ السيارات'}},
+  {id:'x2',icon:'💰',price:70,owned:0,effect:'x2coins',dur:12000,name:{fa:'۲× سکه',en:'2x Coins',ar:'×٢ عملات'},desc:{fa:'دو برابر سکه',en:'Double coins',ar:'عملات مضاعفة'}},
+  {id:'life',icon:'❤️',price:150,owned:0,effect:'life',dur:0,name:{fa:'جان اضافه',en:'Extra Life',ar:'حياة'},desc:{fa:'یک جان اضافه',en:'Gain one life',ar:'حياة إضافية'}}
+];
+const UP_DEFS=[
+  {id:'engine',icon:'⚙️',price:200,level:0,maxLevel:3,name:{fa:'موتور قوی‌تر',en:'Better Engine',ar:'محرك'},desc:{fa:'سرعت پایه بیشتر',en:'Higher base speed',ar:'سرعة أعلى'}},
+  {id:'nitrotank',icon:'⚡',price:180,level:0,maxLevel:3,name:{fa:'باک نیترو',en:'Nitro Tank',ar:'خزان نيترو'},desc:{fa:'نیترو بیشتر',en:'More nitro',ar:'نيترو أكثر'}},
+  {id:'startco',icon:'🪙',price:150,level:0,maxLevel:3,name:{fa:'سکه اولیه',en:'Starter Coins',ar:'عملات'},desc:{fa:'سکه اضافه در شروع',en:'Bonus coins at start',ar:'عملات عند البداية'}}
+];
+function puN(p){return p.name[sett.lang]||p.name.fa;}
+function puD(p){return p.desc[sett.lang]||p.desc.fa;}
+function upN(u){return u.name[sett.lang]||u.name.fa;}
+function upD(u){return u.desc[sett.lang]||u.desc.fa;}
+
+// ── اسکین‌ها ──────────────────────────────────────────────────
+const SKINS=[
+  {id:0,price:0,owned:true,name:{fa:'قرمز کلاسیک',en:'Classic Red',ar:'أحمر'},color:0xcc1111,roof:0xff4444,special:''},
+  {id:1,price:100,owned:false,name:{fa:'آبی اقیانوس',en:'Ocean Blue',ar:'أزرق'},color:0x1144cc,roof:0x4488ff,special:''},
+  {id:2,price:100,owned:false,name:{fa:'سبز جنگل',en:'Forest Green',ar:'أخضر'},color:0x116622,roof:0x22aa44,special:''},
+  {id:3,price:150,owned:false,name:{fa:'طلایی',en:'Gold',ar:'ذهبي'},color:0xaa8800,roof:0xffcc00,special:''},
+  {id:4,price:150,owned:false,name:{fa:'بنفش',en:'Purple',ar:'بنفسجي'},color:0x6600aa,roof:0xcc44ff,special:''},
+  {id:5,price:120,owned:false,name:{fa:'نارنجی',en:'Orange',ar:'برتقالي'},color:0xcc4400,roof:0xff8800,special:''},
+  {id:6,price:200,owned:false,name:{fa:'سفید',en:'White',ar:'أبيض'},color:0xcccccc,roof:0xffffff,special:''},
+  {id:7,price:200,owned:false,name:{fa:'مشکی',en:'Black',ar:'أسود'},color:0x111111,roof:0x333333,special:''},
+  {id:8,price:180,owned:false,name:{fa:'آسمانی',en:'Cyan',ar:'سماوي'},color:0x006688,roof:0x00ccff,special:''},
+  {id:9,price:300,owned:false,name:{fa:'نئون',en:'Neon',ar:'نيون'},color:0x001a33,roof:0x00ffcc,special:'neon'},
+  {id:10,price:350,owned:false,name:{fa:'رنگین‌کمان',en:'Rainbow',ar:'قوس قزح'},color:0xff0000,roof:0xff8800,special:'rainbow'},
+  {id:11,price:400,owned:false,name:{fa:'Wanted',en:'Wanted',ar:'مطلوب'},color:0x4a3000,roof:0x8b5e00,special:'wanted'}
+];
+function skinN(s){return s.name[sett.lang]||s.name.fa;}
+
+// ── صدا ──────────────────────────────────────────────────────
+let _ctx=null;
+function getAC(){if(!_ctx)try{_ctx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _ctx;}
+function playSound(type){
+  if(!sett.sound)return;const ac=getAC();if(!ac)return;
+  try{
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);g.gain.value=sett.volume*.16;
+    const n=ac.currentTime;
+    if(type==='coin'){o.frequency.setValueAtTime(880,n);o.frequency.exponentialRampToValueAtTime(1320,n+.1);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.2);}
+    else if(type==='crash'){o.type='sawtooth';o.frequency.setValueAtTime(200,n);o.frequency.exponentialRampToValueAtTime(50,n+.35);g.gain.exponentialRampToValueAtTime(.001,n+.4);o.start(n);o.stop(n+.4);}
+    else if(type==='powerup'){o.frequency.setValueAtTime(440,n);o.frequency.exponentialRampToValueAtTime(1760,n+.3);g.gain.exponentialRampToValueAtTime(.001,n+.35);o.start(n);o.stop(n+.35);}
+    else if(type==='nitro'){o.type='sawtooth';o.frequency.setValueAtTime(150,n);o.frequency.exponentialRampToValueAtTime(400,n+.2);g.gain.exponentialRampToValueAtTime(.001,n+.3);o.start(n);o.stop(n+.3);}
+    else if(type==='click'){o.frequency.setValueAtTime(600,n);g.gain.exponentialRampToValueAtTime(.001,n+.06);o.start(n);o.stop(n+.06);}
+    else if(type==='gameover'){o.type='sawtooth';o.frequency.setValueAtTime(280,n);o.frequency.exponentialRampToValueAtTime(70,n+.9);g.gain.exponentialRampToValueAtTime(.001,n+1);o.start(n);o.stop(n+1);}
+  }catch(e){}
+}
+function vibrate(p){try{if(sett.vibrate&&navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+
+// ── THREE.JS ──────────────────────────────────────────────────
+let renderer,scene,camera,clock;
+let roadMeshes=[],playerMesh,enemyCars=[],coinMeshes=[],particles3d=[];
+let roadOffset=0;
+const LANES=5;
+const LANE_WIDTH=2.2;
+const ROAD_WIDTH=LANES*LANE_WIDTH;
+const ROAD_Z_LEN=120;
+const CAM_CONFIGS={close:{y:5,z:9,lx:0,ly:0.5,lz:-10},mid:{y:7,z:13,lx:0,ly:0,lz:-15},far:{y:10,z:18,lx:0,ly:0,lz:-20}};
+
+let targetLane=2;
+let currentLaneX=0;
+let laneChanging=false;
+let nitroActive=false,nitroTimer=0;
+
+function laneToX(l){return (l-(LANES-1)/2)*LANE_WIDTH;}
+
+function initThree(){
+  if(typeof THREE === 'undefined'){
+    console.error('THREE is not defined!');
+    showToast('خطا در بارگذاری Three.js!', 'terr');
+    return;
+  }
+  const canvas=document.getElementById('threeCanvas');
+  if(!canvas){console.error('Canvas not found!');return;}
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.1;
+
+  scene=new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a1a);
+  scene.fog=new THREE.FogExp2(0x0a0a1a,0.022);
+
+  camera=new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,0.1,300);
+  setCameraPos();
+
+  clock=new THREE.Clock();
+
+  const ambient=new THREE.AmbientLight(0x334466,0.8);
+  scene.add(ambient);
+
+  const dirLight=new THREE.DirectionalLight(0xffffff,1.4);
+  dirLight.position.set(5,15,5);
+  dirLight.castShadow=true;
+  dirLight.shadow.mapSize.set(1024,1024);
+  dirLight.shadow.camera.near=0.1;
+  dirLight.shadow.camera.far=100;
+  dirLight.shadow.camera.left=-20;dirLight.shadow.camera.right=20;
+  dirLight.shadow.camera.top=20;dirLight.shadow.camera.bottom=-20;
+  scene.add(dirLight);
+
+  const pl1=new THREE.PointLight(0xff3e3e,1.5,30);
+  pl1.position.set(-8,4,0);scene.add(pl1);
+  const pl2=new THREE.PointLight(0x00d4ff,1.2,30);
+  pl2.position.set(8,4,0);scene.add(pl2);
+
+  buildRoad();
+  buildSkybox();
+  buildPlayerCar();
+
+  window.addEventListener('resize',onResize);
+  console.log('Three.js initialized successfully!');
+}
+
+function setCameraPos(){
+  const cfg=CAM_CONFIGS[sett.camMode]||CAM_CONFIGS.close;
+  if(camera){
+    camera.position.set(0,cfg.y,cfg.z);
+    camera.lookAt(cfg.lx,cfg.ly,cfg.lz);
+  }
+}
+
+function onResize(){
+  if(renderer && camera){
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
+}
+
+function buildSkybox(){
+  if(!scene)return;
+  const skyGeo=new THREE.SphereGeometry(200,16,16);
+  const skyMat=new THREE.MeshBasicMaterial({
+    color:sett.theme==='day'?0x87ceeb:0x020210,
+    side:THREE.BackSide
+  });
+  const sky=new THREE.Mesh(skyGeo,skyMat);
+  sky.name='sky';
+  scene.add(sky);
+  if(sett.theme!=='day'){
+    const starGeo=new THREE.BufferGeometry();
+    const positions=[];
+    for(let i=0;i<600;i++){
+      const theta=Math.random()*Math.PI*2;
+      const phi=Math.random()*Math.PI;
+      const r=180+Math.random()*10;
+      positions.push(Math.sin(phi)*Math.cos(theta)*r,Math.cos(phi)*r,Math.sin(phi)*Math.sin(theta)*r);
+    }
+    starGeo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    const starMat=new THREE.PointsMaterial({color:0xffffff,size:0.6,sizeAttenuation:true});
+    scene.add(new THREE.Points(starGeo,starMat));
+  }
+}
+
+function buildRoad(){
+  if(!scene)return;
+  roadMeshes.forEach(m=>scene.remove(m));roadMeshes=[];
+  for(let i=0;i<2;i++){
+    const geo=new THREE.PlaneGeometry(ROAD_WIDTH,ROAD_Z_LEN);
+    const mat=new THREE.MeshLambertMaterial({color:0x1a1a30});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.rotation.x=-Math.PI/2;
+    mesh.position.z=-ROAD_Z_LEN/2+i*ROAD_Z_LEN;
+    mesh.receiveShadow=true;
+    mesh.userData.roadTile=true;
+    scene.add(mesh);
+    roadMeshes.push(mesh);
+  }
+  const edgeMat=new THREE.MeshBasicMaterial({color:0xff3300});
+  const edgeGeo=new THREE.BoxGeometry(0.18,0.08,ROAD_Z_LEN*2);
+  [-ROAD_WIDTH/2,ROAD_WIDTH/2].forEach(ex=>{
+    const edge=new THREE.Mesh(edgeGeo,edgeMat);
+    edge.position.set(ex,0.04,0);
+    scene.add(edge);
+  });
+  buildLaneDashes();
+  buildSideScenery();
+}
+
+let dashGroups=[];
+function buildLaneDashes(){
+  if(!scene)return;
+  dashGroups.forEach(g=>scene.remove(g));dashGroups=[];
+  const dashMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.25});
+  for(let lane=1;lane<LANES;lane++){
+    const x=laneToX(lane)-LANE_WIDTH/2;
+    const group=new THREE.Group();
+    for(let d=0;d<30;d++){
+      const geo=new THREE.BoxGeometry(0.08,0.06,1.8);
+      const m=new THREE.Mesh(geo,dashMat);
+      m.position.set(x,0.03,-d*4);
+      group.add(m);
+    }
+    scene.add(group);
+    dashGroups.push(group);
+  }
+}
+
+let sceneryMeshes=[];
+function buildSideScenery(){
+  if(!scene)return;
+  sceneryMeshes.forEach(m=>scene.remove(m));sceneryMeshes=[];
+  const isDay=sett.theme==='day';
+  const bldColors=[0x222244,0x221133,0x112233,0x332211,0x221122];
+  for(let i=0;i<20;i++){
+    const h=3+Math.random()*8;
+    const w=1.5+Math.random()*2;
+    const geo=new THREE.BoxGeometry(w,h,w);
+    const mat=new THREE.MeshLambertMaterial({color:isDay?0x888899:bldColors[i%bldColors.length]});
+    const m=new THREE.Mesh(geo,mat);
+    const side=i%2===0?1:-1;
+    m.position.set(side*(ROAD_WIDTH/2+2+Math.random()*4),h/2,-i*6-Math.random()*3);
+    m.receiveShadow=true;
+    scene.add(m);
+    sceneryMeshes.push(m);
+    if(!isDay){
+      const wMat=new THREE.MeshBasicMaterial({color:Math.random()>0.5?0xffdd88:0x88ddff,transparent:true,opacity:0.7});
+      for(let ww=0;ww<3;ww++){
+        const wGeo=new THREE.BoxGeometry(0.3,0.3,0.1);
+        const wm=new THREE.Mesh(wGeo,wMat);
+        wm.position.set(m.position.x+(Math.random()-.5)*w*0.6,Math.random()*h*0.8,m.position.z+w/2+0.06);
+        scene.add(wm);sceneryMeshes.push(wm);
+      }
+    }
+  }
+}
+
+// ── ساخت ماشین ──────────────────────────────────────────────────
+function buildCarMesh(bodyColor,roofColor,special){
+  const group=new THREE.Group();
+  const bodyGeo=new THREE.BoxGeometry(1.4,0.5,2.6);
+  let bodyMat;
+  if(special==='rainbow'){
+    bodyMat=new THREE.MeshPhongMaterial({color:0xff0000,shininess:100,vertexColors:false});
+  } else if(special==='neon'){
+    bodyMat=new THREE.MeshPhongMaterial({color:0x001a33,emissive:0x003322,emissiveIntensity:0.5,shininess:200});
+  } else if(special==='wanted'){
+    bodyMat=new THREE.MeshPhongMaterial({color:0x4a3000,shininess:20});
+  } else {
+    bodyMat=new THREE.MeshPhongMaterial({color:bodyColor,shininess:60});
+  }
+  const body=new THREE.Mesh(bodyGeo,bodyMat);
+  body.position.y=0.35;
+  body.castShadow=true;
+  if(special==='rainbow') body.userData.rainbow=true;
+  group.add(body);
+
+  const cabinGeo=new THREE.BoxGeometry(1.1,0.42,1.4);
+  let cabinColor=roofColor;
+  if(special==='neon') cabinColor=0x002211;
+  if(special==='wanted') cabinColor=0x6b4500;
+  const cabinMat=new THREE.MeshPhongMaterial({color:cabinColor,shininess:80});
+  const cabin=new THREE.Mesh(cabinGeo,cabinMat);
+  cabin.position.set(0,0.81,-0.1);
+  cabin.castShadow=true;
+  if(special==='rainbow') cabin.userData.rainbow=true;
+  group.add(cabin);
+
+  const windGeo=new THREE.BoxGeometry(0.96,0.35,0.08);
+  const windMat=new THREE.MeshPhongMaterial({color:0x88ccff,transparent:true,opacity:0.55,shininess:200});
+  const wind=new THREE.Mesh(windGeo,windMat);
+  wind.position.set(0,0.78,0.63);
+  group.add(wind);
+  const rearWind=new THREE.Mesh(windGeo,windMat);
+  rearWind.position.set(0,0.78,-0.82);
+  group.add(rearWind);
+
+  const wheelGeo=new THREE.CylinderGeometry(0.28,0.28,0.18,12);
+  const wheelMat=new THREE.MeshPhongMaterial({color:0x111111,shininess:30});
+  const rimMat=new THREE.MeshPhongMaterial({color:0x888888,shininess:100});
+  const wPos=[[-0.75,0.18,0.85],[0.75,0.18,0.85],[-0.75,0.18,-0.85],[0.75,0.18,-0.85]];
+  wPos.forEach(([wx,wy,wz])=>{
+    const w=new THREE.Mesh(wheelGeo,wheelMat);
+    w.rotation.z=Math.PI/2;w.position.set(wx,wy,wz);w.castShadow=true;
+    group.add(w);
+    const rim=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,0.2,8),rimMat);
+    rim.rotation.z=Math.PI/2;rim.position.set(wx+(wx<0?-0.02:0.02),wy,wz);
+    group.add(rim);
+  });
+
+  const hlGeo=new THREE.BoxGeometry(0.25,0.12,0.06);
+  const hlMat=new THREE.MeshBasicMaterial({color:0xffffaa});
+  [-0.42,0.42].forEach(hx=>{
+    const hl=new THREE.Mesh(hlGeo,hlMat);
+    hl.position.set(hx,0.38,1.34);
+    group.add(hl);
+  });
+  const tlMat=new THREE.MeshBasicMaterial({color:0xff1111});
+  [-0.42,0.42].forEach(tx=>{
+    const tl=new THREE.Mesh(hlGeo,tlMat);
+    tl.position.set(tx,0.38,-1.34);
+    group.add(tl);
+  });
+
+  if(special==='neon'){
+    const glowMat=new THREE.MeshBasicMaterial({color:0x00ffcc,transparent:true,opacity:0.85});
+    const glowGeo=new THREE.BoxGeometry(1.52,0.07,2.72);
+    const glow=new THREE.Mesh(glowGeo,glowMat);
+    glow.position.y=0.03;
+    group.add(glow);
+    const stripMat=new THREE.MeshBasicMaterial({color:0x00ffcc});
+    const stripGeo=new THREE.BoxGeometry(0.06,0.06,2.62);
+    [-0.72,0.72].forEach(sx=>{
+      const strip=new THREE.Mesh(stripGeo,stripMat);
+      strip.position.set(sx,0.12,0);group.add(strip);
+    });
+    const fStripGeo=new THREE.BoxGeometry(1.42,0.06,0.06);
+    const fStrip=new THREE.Mesh(fStripGeo,stripMat);
+    fStrip.position.set(0,0.12,1.31);group.add(fStrip);
+    const rStrip=new THREE.Mesh(fStripGeo,stripMat);
+    rStrip.position.set(0,0.12,-1.31);group.add(rStrip);
+    const cNeonMat=new THREE.MeshBasicMaterial({color:0x00ffaa});
+    const cNeonGeo=new THREE.BoxGeometry(1.13,0.05,0.05);
+    [0.62,-0.82].forEach(nz=>{
+      const cn=new THREE.Mesh(cNeonGeo,cNeonMat);
+      cn.position.set(0,1.03,nz);group.add(cn);
+    });
+    const pl=new THREE.PointLight(0x00ffcc,3,6);pl.position.set(0,-0.1,0);group.add(pl);
+    const pl2=new THREE.PointLight(0x00ffcc,1.5,4);pl2.position.set(0,0.4,1.4);group.add(pl2);
+    group.children.filter(c=>c.material&&c.material.color&&c.material.color.getHex()===0xffffaa).forEach(h=>{
+      h.material=new THREE.MeshBasicMaterial({color:0x00ffee});
+    });
+  }
+  if(special==='wanted'){
+    const stripeMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.75});
+    [-0.25,0.25].forEach(sx=>{
+      const sGeo=new THREE.BoxGeometry(0.18,0.52,2.62);
+      const s=new THREE.Mesh(sGeo,stripeMat);
+      s.position.set(sx,0.35,0);group.add(s);
+    });
+    const hoodGeo=new THREE.BoxGeometry(0.35,0.06,0.9);
+    const hoodStripe=new THREE.Mesh(hoodGeo,stripeMat);
+    hoodStripe.position.set(0,0.61,0.95);group.add(hoodStripe);
+    const starMat=new THREE.MeshBasicMaterial({color:0xffcc00});
+    const starGeo=new THREE.BoxGeometry(0.38,0.44,0.05);
+    const star=new THREE.Mesh(starGeo,starMat);
+    star.position.set(0,1.04,0.0);star.userData.isStar=true;
+    group.add(star);
+    const starGeo2=new THREE.BoxGeometry(0.05,0.44,0.38);
+    const star2=new THREE.Mesh(starGeo2,starMat);
+    star2.position.set(0,1.04,0.0);group.add(star2);
+    const dMat=new THREE.MeshBasicMaterial({color:0xffcc00});
+    [[0.13,0.13],[0.13,-0.13],[-0.13,0.13],[-0.13,-0.13]].forEach(([dx,dz])=>{
+      const dGeo=new THREE.BoxGeometry(0.06,0.3,0.06);
+      const d=new THREE.Mesh(dGeo,dMat);
+      d.position.set(dx,1.04,dz);group.add(d);
+    });
+    const wsMat=new THREE.MeshBasicMaterial({color:0xfff8dc,transparent:true,opacity:0.35});
+    [0.05,-0.12,-0.29].forEach(wy=>{
+      const wsGeo=new THREE.BoxGeometry(1.42,0.04,2.62);
+      const ws=new THREE.Mesh(wsGeo,wsMat);
+      ws.position.set(0,0.35+wy*0.5,0);group.add(ws);
+    });
+  }
+  return group;
+}
+
+function buildPlayerCar(){
+  if(!scene)return;
+  if(playerMesh){scene.remove(playerMesh);playerMesh=null;}
+  const sk=SKINS[GS.equippedSkin];
+  playerMesh=buildCarMesh(sk.color,sk.roof,sk.special);
+  playerMesh.position.set(laneToX(targetLane),0,0);
+  currentLaneX=laneToX(targetLane);
+  scene.add(playerMesh);
+}
+
+const ENEMY_COLORS=[
+  [0xcc1111,0xff4444],[0x1144cc,0x4488ff],[0x116622,0x22aa44],
+  [0xaa8800,0xffcc00],[0x6600aa,0xcc44ff],[0xcc4400,0xff8800],
+  [0xaaaaaa,0xffffff],[0x008888,0x00ccff]
+];
+let spawnT=0,coinT=0;
+
+function spawnEnemy(){
+  if(!scene)return;
+  const lane=Math.floor(Math.random()*LANES);
+  const [bc,rc]=ENEMY_COLORS[Math.floor(Math.random()*ENEMY_COLORS.length)];
+  const mesh=buildCarMesh(bc,rc,'');
+  mesh.rotation.y=Math.PI;
+  mesh.position.set(laneToX(lane),0,-50);
+  mesh.userData={lane,frozen:false};
+  scene.add(mesh);
+  enemyCars.push(mesh);
+}
+
+function spawnCoin(){
+  if(!scene)return;
+  const lane=Math.floor(Math.random()*LANES);
+  const geo=new THREE.SphereGeometry(0.28,10,10);
+  const mat=new THREE.MeshPhongMaterial({color:0xffd700,emissive:0x884400,emissiveIntensity:0.4,shininess:150});
+  const m=new THREE.Mesh(geo,mat);
+  m.position.set(laneToX(lane),0.5,-55);
+  m.userData={lane,rotY:0};
+  const ringGeo=new THREE.TorusGeometry(0.35,0.04,6,16);
+  const ringMat=new THREE.MeshBasicMaterial({color:0xffdd00,transparent:true,opacity:0.55});
+  const ring=new THREE.Mesh(ringGeo,ringMat);
+  m.add(ring);
+  scene.add(m);
+  coinMeshes.push(m);
+}
+
+// ── ذرات ─────────────────────────────────────────────────────
+function spawnParticles3D(pos,color,count){
+  if(!scene)return;
+  count=count||12;
+  for(let i=0;i<count;i++){
+    const geo=new THREE.SphereGeometry(0.08+Math.random()*0.1,4,4);
+    const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:1});
+    const m=new THREE.Mesh(geo,mat);
+    m.position.copy(pos);
+    const a=Math.random()*Math.PI*2;
+    const el=Math.random()*Math.PI-Math.PI/2;
+    const spd=0.08+Math.random()*0.15;
+    m.userData.vel=new THREE.Vector3(Math.cos(el)*Math.cos(a)*spd,Math.sin(el)*spd+0.05,Math.cos(el)*Math.sin(a)*spd);
+    m.userData.life=1;m.userData.decay=0.025+Math.random()*0.02;
+    scene.add(m);particles3d.push(m);
+  }
+}
+
+// ── دود نیترو ─────────────────────────────────────────────────
+let exhaustParticles=[];
+function spawnExhaust(){
+  if(!playerMesh||!scene)return;
+  const geo=new THREE.SphereGeometry(0.12,4,4);
+  const mat=new THREE.MeshBasicMaterial({color:nitroActive?0xcc44ff:0xff8800,transparent:true,opacity:0.8});
+  const m=new THREE.Mesh(geo,mat);
+  m.position.copy(playerMesh.position);
+  m.position.y=0.2;
+  m.position.z+=1.4;
+  m.userData.life=1;m.userData.decay=0.07;
+  m.userData.vel=new THREE.Vector3((Math.random()-.5)*0.04,0.02+Math.random()*0.04,0.12+Math.random()*0.08);
+  scene.add(m);exhaustParticles.push(m);
+}
+
+// ── ورودی ─────────────────────────────────────────────────────
+let laneRepeat=null;
+function startLane(dir){
+  if(!GS.running||GS.paused)return;
+  changeLane(dir);
+  laneRepeat=setInterval(()=>changeLane(dir),200);
+}
+function stopLane(){clearInterval(laneRepeat);laneRepeat=null;}
+function changeLane(dir){
+  targetLane=Math.max(0,Math.min(LANES-1,targetLane+dir));
+  playSound('click');vibrate(18);
+}
+
+window.addEventListener('keydown',e=>{
+  if(!GS.running||GS.paused)return;
+  if(e.code==='ArrowLeft'||e.code==='KeyA'){changeLane(-1);}
+  if(e.code==='ArrowRight'||e.code==='KeyD'){changeLane(1);}
+  if(e.code==='Space'){e.preventDefault();activateNitro();}
+  if(e.code==='Escape')togglePause();
+});
+
+let touchSX=0,touchSY=0;
+const canvasEl = document.getElementById('threeCanvas');
+if(canvasEl){
+  canvasEl.addEventListener('touchstart',e=>{touchSX=e.touches[0].clientX;touchSY=e.touches[0].clientY;},{passive:true});
+  canvasEl.addEventListener('touchend',e=>{
+    if(!GS.running||GS.paused)return;
+    const dx=e.changedTouches[0].clientX-touchSX;
+    const dy=e.changedTouches[0].clientY-touchSY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>28){
+      changeLane(dx<0?-1:1);
+    } else if(dy<-35){activateNitro();}
+  },{passive:true});
+}
+
+// ── نیترو ─────────────────────────────────────────────────────
+function activateNitro(){
+  if(!GS.running||GS.paused)return;
+  if(GS.nitro<GS.nitroMax){showToast(t('nitroFull'),'terr');return;}
+  if(nitroActive)return;
+  nitroActive=true;nitroTimer=120;
+  playSound('nitro');vibrate(60);
+  showToast(t('nitroReady'),'tok');
+}
+
+// ── برخورد ───────────────────────────────────────────────────
+function checkCollisions3D(){
+  if(!playerMesh)return;
+  const px=playerMesh.position.x,pz=playerMesh.position.z;
+  if(!player3d.invincible){
+    for(let i=enemyCars.length-1;i>=0;i--){
+      const e=enemyCars[i];
+      if(e.userData.frozen)continue;
+      const dx=Math.abs(e.position.x-px);
+      const dz=Math.abs(e.position.z-pz);
+      if(dx<1.1&&dz<2.2){
+        enemyCars.splice(i,1);scene.remove(e);
+        if(player3d.shield){
+          player3d.shield=false;delete GS.activePu.shield;
+          spawnParticles3D(playerMesh.position.clone(),0x00d4ff,20);
+          showToast(t('shieldAbs'),'tok');playSound('powerup');
+        } else {
+          spawnParticles3D(playerMesh.position.clone(),0xff3e3e,18);
+          spawnParticles3D(playerMesh.position.clone(),0xff8800,10);
+          handleCrash3D();
+        }
+        break;
+      }
+    }
+  }
+  for(let i=coinMeshes.length-1;i>=0;i--){
+    const c=coinMeshes[i];
+    const dx2=Math.abs(c.position.x-px);
+    const dz2=Math.abs(c.position.z-pz);
+    const magnet=GS.activePu.magnet&&Math.sqrt(dx2*dx2+dz2*dz2)<8;
+    if(magnet){
+      c.position.x+=(px-c.position.x)*0.08;
+      c.position.z+=(pz-c.position.z)*0.05;
+    }
+    if(dx2<0.9&&dz2<1.5){
+      scene.remove(c);coinMeshes.splice(i,1);
+      const amt=GS.activePu.x2coins?2:1;
+      GS.coins+=amt;GS.coinsEarned+=amt;
+      playSound('coin');
+      spawnParticles3D(c.position.clone(),0xffd700,6);
+      coinPopup3D(amt);
+    }
+  }
+}
+
+const player3d={invincible:false,invTimer:0,shield:false};
+function handleCrash3D(){
+  playSound('crash');vibrate([100,50,100]);
+  GS.lives--;player3d.invincible=true;player3d.invTimer=200;
+  updateHUD();
+  if(GS.lives<=0)endGame();
+  else showToast('❤️ '+GS.lives+' '+t('livesLeft'),'terr');
+}
+
+// ── حلقه اصلی بازی ────────────────────────────────────────────
+function gameLoop3D(){
+  if(!GS.running||GS.paused){GS.animId=requestAnimationFrame(gameLoop3D);return;}
+  GS.animId=requestAnimationFrame(gameLoop3D);
+  GS.frame++;
+  const dt=clock.getDelta();
+  const dm={easy:0.6,normal:1,hard:1.45,extreme:2.1}[sett.difficulty]||1;
+  let spd=Math.min(GS.baseSpeed+GS.frame*0.0001*dm,0.7);
+  if(GS.activePu.boost)spd=Math.min(spd*1.7,0.85);
+  if(GS.activePu.freeze)spd*=0.55;
+  if(nitroActive)spd=Math.min(spd*2.5,1.6);
+  GS.speed=spd;
+
+  if(nitroActive){
+    nitroTimer--;GS.nitro=Math.max(0,GS.nitro-0.55);
+    if(nitroTimer<=0||GS.nitro<=0)nitroActive=false;
+    if(GS.frame%2===0)spawnExhaust();
+  } else {
+    GS.nitro=Math.min(GS.nitroMax,GS.nitro+0.18);
+    if(GS.frame%4===0)spawnExhaust();
+  }
+
+  const scoreBonus=GS.activePu.boost?2:1;
+  GS.score+=Math.round(spd*80*scoreBonus);
+  GS.distance+=spd*0.05;
+
+  spawnT++;
+  const spawnRate=Math.max(55-GS.frame*0.03*dm,20);
+  if(spawnT>=spawnRate){if(Math.random()<0.6)spawnEnemy();spawnT=0;}
+  coinT++;
+  const coinRate=Math.max(45-GS.frame*0.04*dm,18);
+  if(coinT>=coinRate){if(Math.random()<0.7)spawnCoin();coinT=0;}
+
+  roadOffset+=spd;
+  roadMeshes.forEach((m,i)=>{
+    m.position.z=((roadOffset+i*ROAD_Z_LEN)%( ROAD_Z_LEN*2))-ROAD_Z_LEN;
+  });
+  dashGroups.forEach(g=>{
+    g.position.z=(g.position.z+spd*4)%16;
+  });
+
+  const fm=GS.activePu.freeze?0.16:1;
+  for(let i=enemyCars.length-1;i>=0;i--){
+    const e=enemyCars[i];
+    e.position.z+=spd*4.5*fm;
+    e.children.forEach(c=>{if(c.geometry&&c.geometry.type==='CylinderGeometry')c.rotation.x+=spd*5;});
+    if(e.position.z>12){scene.remove(e);enemyCars.splice(i,1);}
+  }
+  for(let i=coinMeshes.length-1;i>=0;i--){
+    const c=coinMeshes[i];
+    c.position.z+=spd*4.5;
+    c.rotation.y+=0.05;
+    if(c.position.z>10){scene.remove(c);coinMeshes.splice(i,1);}
+  }
+
+  const targetX=laneToX(targetLane);
+  currentLaneX+=(targetX-currentLaneX)*0.14;
+  if(playerMesh){
+    playerMesh.position.x=currentLaneX;
+    const tiltDir=(targetX-currentLaneX)*0.15;
+    playerMesh.rotation.z=-tiltDir*0.3;
+    playerMesh.children.forEach(c=>{if(c.geometry&&c.geometry.type==='CylinderGeometry')c.rotation.x-=spd*5;});
+    const sk=SKINS[GS.equippedSkin];
+    if(sk.special==='rainbow'){
+      const hue=(GS.frame*2)%360;
+      playerMesh.children.forEach(c=>{
+        if(c.userData&&c.userData.rainbow&&c.material){
+          c.material.color.setHSL(hue/360,1,0.55);
+          if(c.material.emissive) c.material.emissive.setHSL(hue/360,1,0.2);
+        }
+      });
+    }
+    if(sk.special==='neon'){
+      const pulse=0.7+Math.sin(GS.frame*0.12)*0.3;
+      playerMesh.children.forEach(c=>{
+        if(c.isPointLight){c.intensity=2.5*pulse+0.5;}
+        if(c.material&&c.material.color&&c.material.color.getHex()===0x00ffcc){
+          c.material.opacity=0.6+pulse*0.3;
+        }
+      });
+    }
+    if(nitroActive){
+      playerMesh.position.x+=( Math.random()-.5)*0.04;
+      playerMesh.position.y=Math.abs(Math.sin(GS.frame*0.4))*0.04;
+    } else {
+      playerMesh.position.y=Math.abs(Math.sin(GS.frame*0.05))*0.025;
+    }
+  }
+
+  if(player3d.invincible){
+    player3d.invTimer--;
+    if(player3d.invTimer<=0)player3d.invincible=false;
+    if(playerMesh)playerMesh.visible=Math.floor(GS.frame/5)%2===0;
+  } else {
+    if(playerMesh)playerMesh.visible=true;
+  }
+  player3d.shield=!!GS.activePu.shield;
+
+  Object.keys(GS.activePu).forEach(k=>{
+    const def=PU_DEFS.find(p=>p.effect===k);
+    if(def&&def.dur>0){
+      GS.activePu[k]-=16;
+      if(GS.activePu[k]<=0){delete GS.activePu[k];if(k==='shield')player3d.shield=false;}
+    }
+  });
+
+  const cfg=CAM_CONFIGS[sett.camMode]||CAM_CONFIGS.close;
+  camera.position.x+=(currentLaneX*0.15-camera.position.x)*0.08;
+  if(nitroActive)camera.fov=Math.min(camera.fov+0.5,80);
+  else camera.fov=Math.max(camera.fov-0.3,65);
+  camera.updateProjectionMatrix();
+
+  for(let i=particles3d.length-1;i>=0;i--){
+    const p=particles3d[i];
+    p.userData.life-=p.userData.decay;
+    p.position.add(p.userData.vel);
+    p.userData.vel.y-=0.003;
+    p.material.opacity=p.userData.life;
+    p.scale.setScalar(p.userData.life);
+    if(p.userData.life<=0){scene.remove(p);particles3d.splice(i,1);}
+  }
+  for(let i=exhaustParticles.length-1;i>=0;i--){
+    const p=exhaustParticles[i];
+    p.userData.life-=p.userData.decay;
+    p.position.add(p.userData.vel);
+    p.material.opacity=p.userData.life*0.7;
+    p.scale.setScalar(p.userData.life*0.8+0.2);
+    if(p.userData.life<=0){scene.remove(p);exhaustParticles.splice(i,1);}
+  }
+
+  if(player3d.shield&&playerMesh&&GS.frame%2===0){
+    spawnParticles3D(playerMesh.position.clone().add(new THREE.Vector3((Math.random()-.5)*1.5,0.5+Math.random(),(Math.random()-.5)*1.5)),0x00d4ff,1);
+  }
+
+  checkCollisions3D();
+
+  if(GS.frame%8===0)updateHUD();
+  updateNitroBar();
+  updatePUHud();
+  if(GS.frame%12===0)renderPUButtons();
+
+  renderer.render(scene,camera);
+}
+
+// ── مدیریت بازی ───────────────────────────────────────────────
+function startGame(){
+  if(!scene||!renderer){
+    showToast('Three.js هنوز بارگذاری نشده!', 'terr');
+    return;
+  }
+  cleanupScene();
+  resetGS3D();
+  const sc=UP_DEFS.find(u=>u.id==='startco');if(sc)GS.coins+=sc.level*40;
+  const nt=UP_DEFS.find(u=>u.id==='nitrotank');if(nt)GS.nitroMax=100+nt.level*30;
+  GS.nitro=GS.nitroMax;
+  showScreen('gameScreen');
+  setTimeout(()=>{
+    onResize();
+    buildPlayerCar();
+    GS.running=true;
+    if(clock) clock.start();
+    cancelAnimationFrame(GS.animId);
+    GS.animId=requestAnimationFrame(gameLoop3D);
+    startPlayTimeTracker();
+  },60);
+}
+
+function cleanupScene(){
+  if(!scene)return;
+  enemyCars.forEach(m=>scene.remove(m));enemyCars=[];
+  coinMeshes.forEach(m=>scene.remove(m));coinMeshes=[];
+  particles3d.forEach(m=>scene.remove(m));particles3d=[];
+  exhaustParticles.forEach(m=>scene.remove(m));exhaustParticles=[];
+}
+
+function resetGS3D(){
+  GS.score=0;GS.lives=3;GS.speed=GS.baseSpeed;GS.frame=0;
+  GS.distance=0;GS.coinsEarned=0;GS.running=false;GS.paused=false;
+  GS.activePu={};GS.revivesUsed=0;GS.nitro=GS.nitroMax;
+  nitroActive=false;nitroTimer=0;spawnT=0;coinT=0;targetLane=2;
+  player3d.invincible=false;player3d.invTimer=0;player3d.shield=false;
+  currentLaneX=laneToX(2);
+}
+
+function togglePause(){
+  if(!GS.running)return;
+  GS.paused=!GS.paused;
+  const ov=document.getElementById('pauseOv');
+  if(GS.paused){ov.classList.add('vis');cancelAnimationFrame(GS.animId);stopPlayTimeTracker();}
+  else{ov.classList.remove('vis');if(clock) clock.start();GS.animId=requestAnimationFrame(gameLoop3D);startPlayTimeTracker();}
+  playSound('click');
+}
+
+function restartGame(){
+  try{document.getElementById('pauseOv').classList.remove('vis');}catch(e){}
+  GS.running=false;cancelAnimationFrame(GS.animId);
+  cleanupScene();startGame();
+}
+
+function endGame(){
+  GS.running=false;cancelAnimationFrame(GS.animId);
+  stopPlayTimeTracker();
+  playSound('gameover');vibrate([200,100,200]);
+  if(GS.score>GS.highScore){GS.highScore=GS.score;try{localStorage.setItem('cc3_hi',GS.score);}catch(e){}}
+  saveData();
+  document.getElementById('goScore').textContent=GS.score.toLocaleString();
+  document.getElementById('goDist').textContent=Math.round(GS.distance)+' km';
+  document.getElementById('goCoins').textContent=GS.coinsEarned;
+  document.getElementById('goHi').textContent=GS.highScore.toLocaleString();
+  const cost=50+GS.revivesUsed*30;
+  document.getElementById('reviveCost').textContent=t('reviveCostPre')+' '+cost+' 🪙';
+  const rb=document.getElementById('reviveBtn');if(rb)rb.disabled=GS.coins<cost;
+  showScreen('gameOverScreen');
+}
+
+function revivePlayer(){
+  const cost=50+GS.revivesUsed*30;
+  if(GS.coins<cost){showToast(t('notEnough'),'terr');return;}
+  GS.coins-=cost;GS.revivesUsed++;
+  GS.lives=2;player3d.invincible=true;player3d.invTimer=280;
+  saveData();playSound('powerup');
+  showScreen('gameScreen');
+  setTimeout(()=>{GS.running=true;if(clock) clock.start();GS.animId=requestAnimationFrame(gameLoop3D);startPlayTimeTracker();},60);
+}
+
+function returnToMenu(){
+  GS.running=false;GS.paused=false;cancelAnimationFrame(GS.animId);
+  try{document.getElementById('pauseOv').classList.remove('vis');}catch(e){}
+  cleanupScene();saveData();showScreen('menuScreen');
+  stopPlayTimeTracker();
+}
+
+function updateHUD(){
+  document.getElementById('hudScore').textContent=GS.score.toLocaleString();
+  document.getElementById('hudCoins').textContent=GS.coins;
+  document.getElementById('menuCoins').textContent=GS.coins;
+  const lv=document.getElementById('hudLives');
+  if(lv)lv.textContent='❤️'.repeat(Math.max(0,GS.lives))||'💀';
+}
+
+function updateNitroBar(){
+  const pct=GS.nitro/GS.nitroMax;
+  const nf=document.getElementById('nitroFill');
+  if(nf){nf.style.width=(pct*100)+'%';nf.style.boxShadow=pct>0.9?'0 0 12px #cc44ff':'none';}
+  const nb=document.getElementById('nitroBtnTouch');
+  if(nb)nb.classList.toggle('empty',GS.nitro<20);
+}
+
+function updatePUHud(){
+  const hud=document.getElementById('puHud');if(!hud)return;
+  hud.innerHTML='';
+  Object.keys(GS.activePu).forEach(k=>{
+    const def=PU_DEFS.find(p=>p.effect===k);if(!def)return;
+    const chip=document.createElement('div');chip.className='pu-chip';
+    const secs=def.dur>0?Math.ceil(GS.activePu[k]/1000):0;
+    chip.innerHTML=def.icon+(def.dur>0?' <span class="pu-t">'+secs+'s</span>':'');
+    hud.appendChild(chip);
+  });
+  if(nitroActive){
+    const nc=document.createElement('div');nc.className='pu-chip';
+    nc.innerHTML='⚡ <span class="pu-t">'+Math.ceil(GS.nitro)+'</span>';
+    hud.appendChild(nc);
+  }
+}
+
+function renderPUButtons(){
+  const cont=document.getElementById('puBtns');if(!cont)return;
+  cont.innerHTML='';
+  PU_DEFS.forEach(item=>{
+    if(item.owned<=0)return;
+    const isActive=!!GS.activePu[item.effect];
+    const btn=document.createElement('div');
+    btn.className='pu-use-btn'+(isActive?' pu-active-glow':'');
+    btn.innerHTML=item.icon;
+    const badge=document.createElement('div');badge.className='pu-badge';badge.textContent=item.owned;
+    btn.appendChild(badge);btn.onclick=()=>usePU(item);
+    cont.appendChild(btn);
+  });
+}
+
+function usePU(item){
+  if(!GS.running||GS.paused)return;
+  if(item.owned<=0)return;
+  if(item.effect!=='life'&&GS.activePu[item.effect])return;
+  item.owned--;
+  if(item.effect==='life'){GS.lives=Math.min(GS.lives+1,9);updateHUD();}
+  else if(item.effect==='shield'){GS.activePu.shield=item.dur;player3d.shield=true;}
+  else{GS.activePu[item.effect]=item.dur;}
+  playSound('powerup');vibrate(40);showToast(item.icon+' '+puN(item)+' '+t('activated'),'tok');
+  renderPUButtons();saveData();
+}
+
+function coinPopup3D(amt){
+  const el=document.createElement('div');
+  el.className='cpop';el.textContent='+'+amt+'🪙';
+  el.style.left=(window.innerWidth/2+(-50+Math.random()*100))+'px';
+  el.style.top=(window.innerHeight/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
+}
+
+// ── فروشگاه و اسکین ──────────────────────────────────────────
+let _tab='powerups';
+function switchTab(tab,btn){
+  _tab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  renderStore(tab);playSound('click');
+}
+function renderStore(tab){
+  document.getElementById('storeCoins').textContent=GS.coins;
+  const grid=document.getElementById('storeContent');if(!grid)return;
+  grid.innerHTML='';
+  const items=tab==='powerups'?PU_DEFS:UP_DEFS;
+  items.forEach(item=>{
+    const d=document.createElement('div');d.className='sitem';
+    if(tab==='powerups'){
+      d.innerHTML='<div class="si-icon">'+item.icon+'</div><div class="si-name">'+puN(item)+'</div><div class="si-desc">'+puD(item)+'</div><div class="si-price">🪙 '+item.price+'</div>'+(item.owned>0?'<div class="si-count">×'+item.owned+'</div>':'');
+      d.onclick=()=>{if(GS.coins<item.price){showToast(t('notEnough'),'terr');return;}GS.coins-=item.price;item.owned++;saveData();playSound('coin');showToast(item.icon+' '+puN(item)+' '+t('bought'),'tok');document.getElementById('storeCoins').textContent=GS.coins;updateHUD();renderStore(_tab);};
+    } else {
+      const maxed=item.level>=item.maxLevel;const cost=item.price*(item.level+1);
+      let bars='<div class="lvl-bars">';for(let i=0;i<item.maxLevel;i++)bars+='<div class="lvl-bar'+(i<item.level?' on':'')+'"></div>';bars+='</div>';
+      d.innerHTML='<div class="si-icon">'+item.icon+'</div><div class="si-name">'+upN(item)+'</div><div class="si-desc">'+upD(item)+'</div>'+bars+'<div class="si-price">'+(maxed?t('maxed'):'🪙 '+cost)+'</div>';
+      if(!maxed)d.onclick=()=>{if(GS.coins<cost){showToast(t('notEnough'),'terr');return;}GS.coins-=cost;item.level++;if(item.id==='engine')GS.baseSpeed=0.12+item.level*0.03;if(item.id==='nitrotank'){GS.nitroMax=100+item.level*30;}saveData();playSound('powerup');showToast(item.icon+' '+t('upgraded'),'tok');document.getElementById('storeCoins').textContent=GS.coins;updateHUD();renderStore(_tab);};
+    }
+    grid.appendChild(d);
+  });
+}
+
+function renderSkins(){
+  document.getElementById('skinsCoins').textContent=GS.coins;
+  const grid=document.getElementById('skinsGrid');if(!grid)return;
+  grid.innerHTML='';
+  SKINS.forEach(skin=>{
+    const d=document.createElement('div');
+    d.className='skin-item'+(skin.owned?'':' locked')+(GS.equippedSkin===skin.id?' selected':'');
+    const bc='#'+skin.color.toString(16).padStart(6,'0');
+    const rc='#'+skin.roof.toString(16).padStart(6,'0');
+    d.innerHTML='<svg viewBox="0 0 36 56" width="30" height="46"><rect x="3" y="2" width="30" height="52" rx="8" fill="'+bc+'"/><rect x="7" y="4" width="22" height="22" rx="5" fill="'+rc+'" opacity=".75"/><rect x="9" y="6" width="18" height="17" rx="3" fill="rgba(160,220,255,.6)"/><ellipse cx="10" cy="5" rx="5" ry="3" fill="'+rc+'" opacity=".9"/><ellipse cx="26" cy="5" rx="5" ry="3" fill="'+rc+'" opacity=".9"/><ellipse cx="10" cy="51" rx="5" ry="3" fill="#ff2222"/><ellipse cx="26" cy="51" rx="5" ry="3" fill="#ff2222"/></svg>';
+    const nm=document.createElement('div');nm.className='skin-name';nm.textContent=skinN(skin);d.appendChild(nm);
+    if(!skin.owned){const pr=document.createElement('div');pr.className='skin-price';pr.textContent='🪙 '+skin.price;d.appendChild(pr);}
+    d.onclick=()=>{
+      if(!skin.owned){if(GS.coins<skin.price){showToast(t('notEnough'),'terr');return;}GS.coins-=skin.price;skin.owned=true;saveData();showToast(skinN(skin)+' '+t('skinBought'),'tok');playSound('coin');}
+      GS.equippedSkin=skin.id;saveData();renderSkins();updateHUD();
+      if(playerMesh&&GS.running)buildPlayerCar();
+    };
+    grid.appendChild(d);
+  });
+}
+
+// ── ترجمه ──────────────────────────────────────────────────────
+const T={
+  fa:{
+    play:'▶ شروع بازی',store:'🏪 فروشگاه',skins:'🎨 ظاهر ماشین',
+    settings:'⚙️ تنظیمات',secret:'🔐 منوی مخفی',about:'ℹ️ درباره ما',
+    pauseT:'⏸ مکث',resume:'▶ ادامه',restart:'🔄 شروع مجدد',backMenu:'🏠 منوی اصلی',
+    goTitle:'بازی تمام شد!',revive:'💎 احیا',reviveCostPre:'هزینه احیا:',
+    goRestart:'▶ بازی مجدد',goMenu:'🏠 منوی اصلی',
+    scoreLbl:'امتیاز نهایی',distLbl:'مسافت',coinLbl:'سکه',hiLbl:'بهترین',
+    storeT:'🏪 فروشگاه',skinsT:'🎨 ظاهر ماشین',settT:'⚙️ تنظیمات',
+    secretT:'🔐 منوی مخفی',aboutT:'ℹ️ درباره ما',
+    storePu:'💡 ابزارها',storeUp:'🔧 ارتقاء',back:'← برگشت',
+    settLang:'🌍 زبان',settTheme:'🎨 تم',settSound:'🔊 صدا',settVol:'میزان صدا',
+    settVib:'📳 لرزش',settDiff:'⚙️ سختی',settCam:'📷 دوربین',settSave:'ذخیره و برگشت',
+    dEasy:'آسان',dNormal:'معمولی',dHard:'سخت',dExtreme:'بسیار سخت',
+    camClose:'نزدیک',camMid:'میانه',camFar:'دور',
+    themeDark:'🌑 تاریک',themeNight:'🌌 شب',themeDay:'☀️ روز',
+    secretDesc:'کد مخفی را وارد کنید تا جوایز ویژه دریافت کنید',
+    secretHint:'💡 کد یکبار مصرف است. فقط یک کد وجود دارد!',
+    codeApply:'اعمال',
+    aboutVer:'نسخه ۱.۰ | توسعه‌دهنده: Midnight Games',
+    aboutLink:'صفحه Midnight Games',
+    aboutFeats:'🎮 کنترل لمسی و کیبورد\n🌍 فارسی، انگلیسی، عربی\n🪙 سیستم سکه و فروشگاه\n🎨 ۱۲ پوسته مختلف\n💡 ۶ ابزار ویژه\n⚡ سیستم نیترو\n🔷 گرافیک سه‌بعدی',
+    notEnough:'سکه کافی ندارید! 🪙',bought:'خریداری شد!',upgraded:'ارتقاء یافت!',
+    activated:'فعال شد!',expired:'تمام شد',livesLeft:'جان باقی‌مانده',
+    codeDone:'کد موفق!',codeUsed:'کد قبلاً استفاده شده',codeInvalid:'کد نامعتبر',codeEmpty:'کد را وارد کنید',
+    skinBought:'پوسته خریداری شد!',maxed:'حداکثر ✅',
+    nitroFull:'باک باید کاملاً پر باشد!',nitroReady:'⚡ نیترو!',
+    shieldAbs:'🛡️ سپر تصادف را گرفت!',
+    pauseTitle:'⏸ مکث',
+  },
+  en:{
+    play:'▶ Play',store:'🏪 Store',skins:'🎨 Car Skins',
+    settings:'⚙️ Settings',secret:'🔐 Secret',about:'ℹ️ About',
+    pauseT:'⏸ Paused',resume:'▶ Resume',restart:'🔄 Restart',backMenu:'🏠 Main Menu',
+    goTitle:'Game Over!',revive:'💎 Revive',reviveCostPre:'Revive cost:',
+    goRestart:'▶ Play Again',goMenu:'🏠 Main Menu',
+    scoreLbl:'Final Score',distLbl:'Distance',coinLbl:'Coins',hiLbl:'Best',
+    storeT:'🏪 Store',skinsT:'🎨 Car Skins',settT:'⚙️ Settings',
+    secretT:'🔐 Secret Menu',aboutT:'ℹ️ About',
+    storePu:'💡 Power-ups',storeUp:'🔧 Upgrades',back:'← Back',
+    settLang:'🌍 Language',settTheme:'🎨 Theme',settSound:'🔊 Sound',settVol:'Volume',
+    settVib:'📳 Vibration',settDiff:'⚙️ Difficulty',settCam:'📷 Camera',settSave:'Save & Back',
+    dEasy:'Easy',dNormal:'Normal',dHard:'Hard',dExtreme:'Extreme',
+    camClose:'Close',camMid:'Mid',camFar:'Far',
+    themeDark:'🌑 Dark',themeNight:'🌌 Night',themeDay:'☀️ Day',
+    secretDesc:'Enter the secret code to get special rewards',
+    secretHint:'💡 One-time use. There is only one code!',
+    codeApply:'Apply',
+    aboutVer:'v1.0 | Developer: Midnight Games',
+    aboutLink:'Midnight Games page',
+    aboutFeats:'🎮 Touch & keyboard controls\n🌍 Persian, English, Arabic\n🪙 Coin & store system\n🎨 12 skins\n💡 6 power-ups\n⚡ Nitro system\n🔷 3D graphics',
+    notEnough:'Not enough coins! 🪙',bought:'Purchased!',upgraded:'Upgraded!',
+    activated:'Activated!',expired:'Expired',livesLeft:'lives remaining',
+    codeDone:'Code applied!',codeUsed:'Code already used',codeInvalid:'Invalid code',codeEmpty:'Enter a code',
+    skinBought:'Skin purchased!',maxed:'Maxed ✅',
+    nitroFull:'Tank must be full!',nitroReady:'⚡ Nitro!',
+    shieldAbs:'🛡️ Shield blocked the hit!',
+    pauseTitle:'⏸ Paused',
+  },
+  ar:{
+    play:'▶ ابدأ',store:'🏪 المتجر',skins:'🎨 مظهر السيارة',
+    settings:'⚙️ الإعدادات',secret:'🔐 سري',about:'ℹ️ عن',
+    pauseT:'⏸ إيقاف',resume:'▶ متابعة',restart:'🔄 إعادة',backMenu:'🏠 القائمة',
+    goTitle:'!انتهت اللعبة',revive:'💎 إحياء',reviveCostPre:'تكلفة الإحياء:',
+    goRestart:'▶ العب مجدداً',goMenu:'🏠 القائمة',
+    scoreLbl:'النتيجة النهائية',distLbl:'المسافة',coinLbl:'العملات',hiLbl:'الأفضل',
+    storeT:'🏪 المتجر',skinsT:'🎨 مظهر السيارة',settT:'⚙️ الإعدادات',
+    secretT:'🔐 سري',aboutT:'ℹ️ عن اللعبة',
+    storePu:'💡 القدرات',storeUp:'🔧 الترقيات',back:'← عودة',
+    settLang:'🌍 اللغة',settTheme:'🎨 الثيم',settSound:'🔊 الصوت',settVol:'مستوى الصوت',
+    settVib:'📳 الاهتزاز',settDiff:'⚙️ الصعوبة',settCam:'📷 الكاميرا',settSave:'حفظ وعودة',
+    dEasy:'سهل',dNormal:'عادي',dHard:'صعب',dExtreme:'صعب جداً',
+    camClose:'قريب',camMid:'وسط',camFar:'بعيد',
+    themeDark:'🌑 داكن',themeNight:'🌌 ليلي',themeDay:'☀️ نهاري',
+    secretDesc:'أدخل الكود السري للحصول على مكافآت خاصة',
+    secretHint:'💡 للاستخدام مرة واحدة فقط!',
+    codeApply:'تطبيق',
+    aboutVer:'الإصدار ١.٠ | Midnight Games',
+    aboutLink:'صفحة Midnight Games',
+    aboutFeats:'🎮 لمس ولوحة مفاتيح\n🌍 فارسي، إنجليزي، عربي\n🪙 نظام العملات والمتجر\n🎨 ١٢ مظهراً\n💡 ٦ قدرات\n⚡ نظام النيترو\n🔷 رسومات ثلاثية الأبعاد',
+    notEnough:'!عملات غير كافية',bought:'!تم الشراء',upgraded:'!تمت الترقية',
+    activated:'!تم التفعيل',expired:'انتهى',livesLeft:'أرواح متبقية',
+    codeDone:'!تم تطبيق الكود',codeUsed:'تم استخدام الكود',codeInvalid:'كود غير صالح',codeEmpty:'أدخل كوداً',
+    skinBought:'!تم شراء المظهر',maxed:'الحد الأقصى ✅',
+    nitroFull:'يجب أن يكون الخزان ممتلئاً!',nitroReady:'⚡ نيترو!',
+    shieldAbs:'!🛡️ امتص الدرع الضربة',
+    pauseTitle:'⏸ إيقاف مؤقت',
+  }
+};
+function t(k){return (T[sett.lang]||T.fa)[k]||k;}
+
+function applyLang(){
+  const l=sett.lang;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==='en'?'ltr':'rtl';
+  document.body.dir=l==='en'?'ltr':'rtl';
+  const mc=document.getElementById('mobileControls');
+  if(mc)mc.style.direction='ltr';
+  function s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+  s('btnPlay',t('play'));s('btnStore',t('store'));s('btnSkins',t('skins'));
+  s('btnSettings',t('settings'));s('btnSecret',t('secret'));s('btnAbout',t('about'));
+  s('pauseTitle',t('pauseTitle'));
+  s('pauseResumeBtn',t('resume'));
+  s('pauseRestartBtn',t('restart'));
+  s('pauseMenuBtn',t('backMenu'));
+  s('goTitle',t('goTitle'));s('goScoreLbl',t('scoreLbl'));
+  s('goDistLbl',t('distLbl'));s('goCoinLbl',t('coinLbl'));s('goHiLbl',t('hiLbl'));
+  s('goRestartBtn',t('goRestart'));s('goMenuBtn',t('goMenu'));
+  const rb=document.getElementById('reviveBtn');if(rb)rb.textContent=t('revive');
+  s('storeTitleEl',t('storeT'));s('tabPuBtn',t('storePu'));s('tabUpBtn',t('storeUp'));s('storeBackBtn',t('back'));
+  s('skinsTitleEl',t('skinsT'));s('skinsBackBtn',t('back'));
+  s('settTitleEl',t('settT'));s('settLangLbl',t('settLang'));s('settThemeLbl',t('settTheme'));
+  s('settSoundLbl',t('settSound'));s('settVolLbl',t('settVol'));
+  s('settVibLbl',t('settVib'));s('settDiffLbl',t('settDiff'));s('settCamLbl',t('settCam'));
+  s('settSaveBtn',t('settSave'));
+  s('dEasy',t('dEasy'));s('dNormal',t('dNormal'));s('dHard',t('dHard'));s('dExtreme',t('dExtreme'));
+  s('thDark',t('themeDark'));s('thNight',t('themeNight'));s('thDay',t('themeDay'));
+  s('camClose',t('camClose'));s('camMid',t('camMid'));s('camFar',t('camFar'));
+  s('secretTitleEl',t('secretT'));s('secretDescEl',t('secretDesc'));
+  s('secretHintEl',t('secretHint'));s('codeApplyBtn',t('codeApply'));s('secretBackBtn',t('back'));
+  const ci=document.getElementById('codeInp');if(ci)ci.placeholder=t('codeEmpty');
+  s('aboutTitleEl',t('aboutT'));s('aboutVerEl',t('aboutVer'));s('aboutLinkEl',t('aboutLink'));s('aboutBackBtn',t('back'));
+  const af=document.getElementById('aboutFeatEl');
+  if(af)af.innerHTML=t('aboutFeats').split('\n').map(l=>'<div>'+l+'</div>').join('');
+  ['lbtnFa','lbtnEn','lbtnAr'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  const active={fa:'lbtnFa',en:'lbtnEn',ar:'lbtnAr'}[l];
+  const ab=document.getElementById(active);if(ab)ab.classList.add('active');
+}
+
+function toggleSett(key,el){
+  sett[key]=!sett[key];el.classList.toggle('on',sett[key]);
+  playSound('click');saveSett();
+  if(key==='sound'){
+    const sl=document.getElementById('volSlider');
+    if(sl){sl.disabled=!sett.sound;sl.style.opacity=sett.sound?'1':'.35';sl.style.pointerEvents=sett.sound?'auto':'none';}
+  }
+}
+function updateVol(v){sett.volume=v/100;saveSett();}
+function setLang(lang,btn){sett.lang=lang;saveSett();applyLang();}
+function setTheme(th,btn){
+  sett.theme=th;saveSett();
+  document.body.classList.remove('theme-night','theme-day');
+  if(th==='night')document.body.classList.add('theme-night');
+  if(th==='day')document.body.classList.add('theme-day');
+  ['thDark','thNight','thDay'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  btn.classList.add('active');
+  if(scene){
+    scene.fog.color.set(th==='day'?0xc8e8ff:0x0a0a1a);
+    const sky=scene.getObjectByName('sky');
+    if(sky)sky.material.color.set(th==='day'?0x87ceeb:0x020210);
+  }
+}
+function setCam(mode,btn){
+  sett.camMode=mode;saveSett();
+  ['camClose','camMid','camFar'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  btn.classList.add('active');
+  setCameraPos();
+}
+
+// ── کد مخفی ────────────────────────────────────────────────────
+function applyCode(){
+  const inp=document.getElementById('codeInp'),res=document.getElementById('codeRes');
+  if(!inp||!res)return;
+  const code=inp.value.trim().toUpperCase();
+  if(!code){res.className='code-res err';res.textContent=t('codeEmpty');return;}
+  if(GS.codeUsed){res.className='code-res err';res.textContent=t('codeUsed');return;}
+  if(code!=='MIDNIGHT'){res.className='code-res err';res.textContent=t('codeInvalid');playSound('crash');return;}
+  GS.codeUsed=true;GS.coins+=99999;saveData();inp.value='';
+  res.className='code-res ok';res.textContent='♾️ '+t('codeDone')+' +99999 🪙';
+  playSound('powerup');vibrate([50,30,50,30,50]);updateHUD();
+  for(let i=0;i<8;i++)setTimeout(()=>coinPopup3D(Math.floor(Math.random()*1000)),i*110);
+}
+
+// ── ذخیره / بارگذاری ──────────────────────────────────────────
+function saveData(){
+  try{
+    localStorage.setItem('cc3_coins',GS.coins);
+    localStorage.setItem('cc3_hi',GS.highScore);
+    localStorage.setItem('cc3_codeUsed',GS.codeUsed?'1':'');
+    localStorage.setItem('cc3_skin',GS.equippedSkin);
+    localStorage.setItem('cc3_pu',JSON.stringify(PU_DEFS.map(p=>({id:p.id,owned:p.owned}))));
+    localStorage.setItem('cc3_up',JSON.stringify(UP_DEFS.map(u=>({id:u.id,level:u.level}))));
+    localStorage.setItem('cc3_skins',JSON.stringify(SKINS.map(s=>({id:s.id,owned:s.owned}))));
+  }catch(e){}
+}
+function loadData(){
+  try{
+    GS.coins=parseInt(localStorage.getItem('cc3_coins')||'500');
+    GS.highScore=parseInt(localStorage.getItem('cc3_hi')||'0');
+    GS.codeUsed=!!localStorage.getItem('cc3_codeUsed');
+    GS.equippedSkin=parseInt(localStorage.getItem('cc3_skin')||'0');
+    const pu=JSON.parse(localStorage.getItem('cc3_pu')||'[]');
+    pu.forEach(p=>{const d=PU_DEFS.find(x=>x.id===p.id);if(d)d.owned=p.owned;});
+    const up=JSON.parse(localStorage.getItem('cc3_up')||'[]');
+    up.forEach(u=>{const d=UP_DEFS.find(x=>x.id===u.id);if(d){d.level=u.level;if(d.id==='engine')GS.baseSpeed=0.12+d.level*0.03;if(d.id==='nitrotank')GS.nitroMax=100+d.level*30;}});
+    const sk=JSON.parse(localStorage.getItem('cc3_skins')||'[]');
+    sk.forEach(s=>{const d=SKINS.find(x=>x.id===s.id);if(d)d.owned=s.owned;});
+    GS.nitro=GS.nitroMax;
+  }catch(e){}
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+let _toastT=null;
+function showToast(msg,cls){
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.className=(cls?cls+' ':'')+'show';
+  clearTimeout(_toastT);_toastT=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── صفحه‌ها ────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);if(el)el.classList.add('active');
+  playSound('click');updateHUD();applyLang();
+  if(id==='storeScreen')renderStore('powerups');
+  if(id==='skinsScreen')renderSkins();
+  if(id==='gameScreen')setTimeout(onResize,60);
+}
+
+// ── ستاره‌های منو ──────────────────────────────────────────────
+function addMenuStars(){
+  const menu=document.getElementById('menuScreen');if(!menu)return;
+  for(let i=0;i<28;i++){
+    const s=document.createElement('div');s.className='star-p';
+    s.style.cssText='left:'+Math.random()*100+'vw;top:'+Math.random()*100+'vh;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*4)+'s';
+    menu.appendChild(s);
+  }
+}
+
+// ============================================================
+// ===== بخش مایکت و نظرسنجی =====
+// ============================================================
+
+const PACKAGE_NAME = 'com.MidnightGames.CarChase';  // ← نام بسته‌ی برنامه‌ی خودت
+
+function openMyketIntent(type) {
+  let url = '';
+  switch(type) {
+    case 'comment':
+      url = 'myket://comment?id=' + PACKAGE_NAME;
+      break;
+    case 'update':
+      url = 'myket://check-update?id=' + PACKAGE_NAME;
+      break;
+    case 'details':
+      url = 'myket://details?id=' + PACKAGE_NAME;
+      break;
+    default:
+      return;
+  }
+  console.log('Opening Myket Intent:', url);
+  window.location.href = url;
+}
+
+// ── رهگیری زمان بازی ──────────────────────────────────────────
+const RATING_KEY = 'cc3_playtime_seconds';
+const RATING_COOLDOWN_KEY = 'cc3_rating_cooldown';
+const RATING_SHOWN_KEY = 'cc3_rating_shown';
+
+let playTimeAccumulator = 0;
+let ratingCheckInterval = null;
+
+function loadPlayTime() {
+  try {
+    const stored = localStorage.getItem(RATING_KEY);
+    if (stored) playTimeAccumulator = parseFloat(stored) || 0;
+    else playTimeAccumulator = 0;
+  } catch(e) {}
+}
+
+function savePlayTime() {
+  try {
+    localStorage.setItem(RATING_KEY, playTimeAccumulator.toString());
+  } catch(e) {}
+}
+
+function resetPlayTime() {
+  playTimeAccumulator = 0;
+  savePlayTime();
+}
+
+function tickPlayTime() {
+  if (GS.running && !GS.paused) {
+    playTimeAccumulator += 1;
+    savePlayTime();
+    if (playTimeAccumulator >= 108000) { // 30 ساعت
+      const cooldownEnd = parseInt(localStorage.getItem(RATING_COOLDOWN_KEY) || '0');
+      const now = Date.now();
+      if (now >= cooldownEnd && !localStorage.getItem(RATING_SHOWN_KEY)) {
+        showRatingModal();
+      }
+    }
+  }
+}
+
+function showRatingModal() {
+  const modal = document.getElementById('ratingModal');
+  if (modal) modal.classList.add('visible');
+  localStorage.setItem(RATING_SHOWN_KEY, '1');
+}
+
+function closeRatingModal(action) {
+  const modal = document.getElementById('ratingModal');
+  if (modal) modal.classList.remove('visible');
+  if (action === 'later') {
+    const cooldownEnd = Date.now() + 3600000; // ۱ ساعت
+    localStorage.setItem(RATING_COOLDOWN_KEY, cooldownEnd.toString());
+    localStorage.removeItem(RATING_SHOWN_KEY);
+    resetPlayTime();
+    showToast('یادآوری بعد از ۱ ساعت دیگر', 'tok');
+  } else if (action === 'rated') {
+    localStorage.setItem(RATING_SHOWN_KEY, '1');
+    showToast('ممنون از نظر شما! ❤️', 'tok');
+  }
+}
+
+function startPlayTimeTracker() {
+  if (ratingCheckInterval) clearInterval(ratingCheckInterval);
+  ratingCheckInterval = setInterval(tickPlayTime, 1000);
+}
+
+function stopPlayTimeTracker() {
+  if (ratingCheckInterval) {
+    clearInterval(ratingCheckInterval);
+    ratingCheckInterval = null;
+  }
+}
+
+// ── مقداردهی اولیه ─────────────────────────────────────────────
+function init(){
+  loadData();loadSett();loadPlayTime();
+  
+  const ts=document.getElementById('toggleSound');if(ts)ts.classList.toggle('on',sett.sound);
+  const tv=document.getElementById('toggleVib');if(tv)tv.classList.toggle('on',sett.vibrate);
+  const vs=document.getElementById('volSlider');
+  if(vs){vs.value=sett.volume*100;vs.disabled=!sett.sound;vs.style.opacity=sett.sound?'1':'.35';vs.style.pointerEvents=sett.sound?'auto':'none';}
+  const ds=document.getElementById('diffSel');if(ds)ds.value=sett.difficulty;
+  document.body.classList.remove('theme-night','theme-day');
+  if(sett.theme==='night')document.body.classList.add('theme-night');
+  if(sett.theme==='day')document.body.classList.add('theme-day');
+  
+  const tm={dark:'thDark',night:'thNight',day:'thDay'};
+  ['thDark','thNight','thDay'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  const tb=document.getElementById(tm[sett.theme]||'thDark');if(tb)tb.classList.add('active');
+  
+  const cm={close:'camClose',mid:'camMid',far:'camFar'};
+  ['camClose','camMid','camFar'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  const cb=document.getElementById(cm[sett.camMode]||'camClose');if(cb)cb.classList.add('active');
+
+  try{
+    initThree();
+    console.log('Three.js scene initialized');
+  }catch(e){
+    console.error('Three.js init failed:',e);
+    showToast('خطا در بارگذاری موتور بازی!', 'terr');
+  }
+
+  const bar=document.getElementById('ldBar');
+  const ls=document.getElementById('loadingScreen');
+  let pct=0;
+  const iv=setInterval(()=>{
+    pct+=Math.random()*18+10;
+    if(bar) bar.style.width=Math.min(pct,95)+'%';
+    if(pct>=95){
+      clearInterval(iv);
+      if(bar) bar.style.width='100%';
+      setTimeout(()=>{
+        if(ls){
+          ls.classList.add('fade-out');
+          setTimeout(()=>{
+            ls.classList.add('gone');
+            showScreen('menuScreen');
+            addMenuStars();
+            updateHUD();
+          },350);
+        }
+      },200);
+    }
+  },120);
+}
+
+window.onload = function () {
+  init();
+};
+</script>
+</body>
+</html>
